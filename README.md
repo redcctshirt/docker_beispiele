@@ -6,6 +6,7 @@ https://hub.docker.com/ - Images
 * [Installation](#installation)
   * [bei Fedora - per Skript](#bei-fedora---per-skript)
   * [bei Fedora](#bei-fedora)
+  * [docker-Gruppe erstellen](#docker-gruppe-erstellen)
 * [Infos anzeigen](#infos-anzeigen)
 * [Beispiele](#beispiele)
   * [Hallo Welt](#hallo-welt)
@@ -62,6 +63,18 @@ docker run hello-world
 ## Infos anzeigen
 
 ```
+# Version anzeigen
+docker version
+
+# Hilfe anzeigen
+docker --help
+
+# Systeminfos anzeigen
+docker info
+
+# Hilfe für ein Kommando (Beispiel ps) anzeigen
+docker ps --help
+
 # alle Container anzeigen
 docker ps -a
 
@@ -110,6 +123,21 @@ docker logs containername
 
 # Container stoppen
 docker stop containername
+
+# Container starten
+docker start containername
+
+# Container neu starten
+docker restart containername
+
+# laufenden Prozesse im Container anzeigen
+docker top containername
+
+# alle Prozesse im Container pausieren
+docker pause containername
+
+# alle Prozesse im Container wieder laufen lassen
+docker unpause containername
 ```
 
 ## Lizenz
