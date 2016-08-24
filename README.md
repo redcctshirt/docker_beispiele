@@ -4,7 +4,7 @@ https://www.docker.com/
 
 ## Installation
 
-### per Skript
+### bei Fedora - per Skript
 
 ```
 # Install-Skript herunterladen und ausführen
@@ -33,6 +33,20 @@ systemctl enable docker.service
 systemctl start docker
 
 # Hallo Welt - Prüfen ob docker läuft
+docker run hello-world
+```
+
+### docker-Gruppe erstellen
+
+```
+# Anwendung von docker ohne su oder sudo wird damit möglich gemacht
+# Gruppe docker hinzufügen
+groupadd docker
+
+# Benutzer zur Gruppe docker hinzufügen
+usermod -aG docker Benutzername
+
+# Hallo Welt - Prüfen ob docker auch ohne su oder sudo läuft
 docker run hello-world
 ```
 
