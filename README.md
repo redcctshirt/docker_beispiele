@@ -3,9 +3,9 @@
 https://www.docker.com/ - Website    
 https://hub.docker.com/ - Images
 
-* [Installation](#Installation)
-* [Hallo Welt](#Hallo Welt)
-* [Infos anzeigen](#Infos anzeigen)
+* [Installation](#installation)
+* [Hallo Welt](#hallo-welt)
+* [Infos anzeigen](#infos-anzeigen)
 
 ## Installation
 
