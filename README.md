@@ -1,6 +1,7 @@
 # Docker - Beispiele
 
-https://www.docker.com/
+https://www.docker.com/ - Website
+https://hub.docker.com/ - Images
 
 ## Installation
 
@@ -49,6 +50,28 @@ usermod -aG docker Benutzername
 # Hallo Welt - Prüfen ob docker auch ohne su oder sudo läuft
 docker run hello-world
 ```
+
+## Hallo Welt
+
+```
+# Hallo Welt
+docker run hello-world
+
+# Programm cowsay mit dem Parameter "Hallo Welt" im Container docker/whalesay starten
+docker run docker/whalesay cowsay Hallo Welt
+```
+
+## Infos anzeigen
+
+```
+# alle Container anzeigen
+docker ps -a
+
+# alle Images anzeigen
+docker images
+
+```
+
 
 ## Lizenz
 
