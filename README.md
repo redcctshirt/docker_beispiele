@@ -14,7 +14,9 @@ https://hub.docker.com/ - Images
 * [Kommandos](#kommandos)
 * [Image erstellen](#image-erstellen)
 * [Image mit Dockerfile erstellen](#image-mit-dockerfile-erstellen)
-
+* [Beispiele 2](#beispiele-2)
+  * [Redis Server und Client](#redis-server-und-client)
+ 
 * schlanke und portable Variante für Anwendungen
 * Container können schnell gestartet und beendet werden
 * Container sind portierbar
@@ -282,6 +284,30 @@ docker build -t docker_hub_benutzername/imagename .
 docker push docker_hub_benutzername/imagename
 ```
 
+## Beispiele 2
+
+### Redis Server und Client
+
+```
+# Redis Server und Client in 2 verschiedenen Containern starten
+# redis-Image herunterladen
+docker pull redis
+
+# Redis Server starten (-d Daemon), --name Containername
+docker run --name redisserver -d redis
+
+# Redis Client starten, mit Container redisserver verbinden und als redisd ansprechen
+docker run --rm -it --link redisserver:redisd redis /bin/bash
+redis-cli -h redisd -p 6379 # Redis-Client probieren
+exit # Redis-Client beenden
+exit # Container beenden
+
+# Redis Server starten und Verzeichnis vom Host nutzen (Volumes)
+docker run -v /host/verzeichnis:/container/verzeichnis --name redisserver -d redis
+
+# Redis Client starten und Verzeichnis vom Host nutzen, Datei kopieren
+docker run --rm --volumes-from redisserver -v /host/verzeichnis:/container/verzeichnisvolumes ubuntu cp /redisservervolumes/datei /container/verzeichnisvolumes
+```
 
 
 ## Lizenz
