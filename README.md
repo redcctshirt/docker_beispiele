@@ -11,6 +11,16 @@ https://hub.docker.com/ - Images
 * [Beispiele](#beispiele)
   * [Hallo Welt](#hallo-welt)
   * [Hallo Welt-Dienst starten](#hallo-welt-dienst-starten)
+* [Kommandos](#kommandos)
+* [Image erstellen](#image-erstellen)
+* [Image mit Dockerfile erstellen](#image-mit-dockerfile-erstellen)
+
+* schlanke und portable Variante für Anwendungen
+* Container können schnell gestartet und beendet werden
+* Container sind portierbar
+* sehr viele Container auf einem Host möglich
+* Container nutzen Ressourcen vom Betriebssystem
+* Anwendungen ohne viel Installation und Konfiguration sind machbar
 
 ## Installation
 
@@ -25,6 +35,7 @@ systemctl enable docker.service
 
 # Dienst starten
 systemctl start docker
+docker daemon - Docker manuell starten
 
 # Hallo Welt - Prüfen ob docker läuft
 docker run hello-world
@@ -41,6 +52,7 @@ systemctl enable docker.service
 
 # Dienst starten
 systemctl start docker
+docker daemon - Docker manuell starten
 
 # Hallo Welt - Prüfen ob docker läuft
 docker run hello-world
@@ -50,9 +62,6 @@ docker run hello-world
 
 ```
 # Anwendung von docker ohne su oder sudo wird damit möglich gemacht
-# Gruppe docker hinzufügen
-groupadd docker
-
 # Benutzer zur Gruppe docker hinzufügen
 usermod -aG docker Benutzername
 
@@ -106,6 +115,9 @@ docker run ubuntu /bin/echo 'Hello world'
 # im Container (Image: ubuntu) /bin/bash starten, Kommandos können nun ausgeführt werden
 # mit exit beenden
 docker run -t -i ubuntu /bin/bash
+
+# -h neuen Hostnamen vergeben
+docker run -h newhostname -t -i ubuntu /bin/bash
 ```
 
 ### Hallo Welt-Dienst starten
@@ -114,12 +126,34 @@ docker run -t -i ubuntu /bin/bash
 # -d im Hintergrund laufen lassen (als Daemon)
 # im Container (Image: ubuntu) /bin/sh starten und Befehle ausführen
 docker run -d ubuntu /bin/sh -c "while true; do echo Hallo Welt; sleep 1; done"
+```
+
+## Kommandos
+
+```
+# Version anzeigen
+docker version
+
+# Hilfe anzeigen
+docker --help
+
+# Systeminfos anzeigen
+docker info
+
+# alle Images anzeigen
+docker images
 
 # alle laufenden Container anzeigen
 docker ps
 
+# alle Container anzeigen
+docker ps -a
+
 # Logging (stdout) vom Container anzeigen, Containername wird bei docker ps angezeigt
 docker logs containername
+
+# neuen Container mit Image hello-world starten, --name Name für Container festlegen
+docker run --name jim hello-world
 
 # Container stoppen
 docker stop containername
@@ -138,7 +172,117 @@ docker pause containername
 
 # alle Prozesse im Container wieder laufen lassen
 docker unpause containername
+
+# Containerinfos herausfinden
+docker inspect containername
+
+# IP-Adresse des Containers ermitteln
+docker inspect --format {{.NetworkSettings.IPAddress}} containername
+
+# Änderungen im Container anzeigen
+docker diff containername
+
+# Container löschen
+docker rm containername
+
+# Container löschen, wenn er beendet wurde
+docker run --rm hello-world
 ```
+
+## Image erstellen
+
+```
+# Container mit bash starten (Image: ubuntu)
+docker run -it --name containername ubuntu bash
+
+# Programme installieren, System-Änderungen durchführen 
+apt-get install terminix
+
+# Container verlassen
+exit 
+
+# Image erstellen
+docker commit containername repositoryname/imagename
+
+# Container mit neuem Image starten
+docker run repositoryname/imagename
+```
+
+## Image mit Dockerfile erstellen
+
+```
+# Dockerfile erstellen
+touch Dockerfile
+
+# Dockerfile-Inhalt ändern (nano Dockerfile)
+FROM debian:wheezy # Image bestimmen
+RUN apt-get install terminix # Kommando ausführen
+
+# Image erstellen
+docker build -t repositoryname/imagename .
+
+# Container mit neuem Image starten
+docker run repositoryname/imagename 
+```
+
+* Skript nimmt Argumente entgegen
+
+```
+# Dockerfile erstellen und Skript erstellen
+touch Dockerfile
+touch skript.sh
+
+# Skript-Inhalt ändern (nano skript.sh)
+#!/bin/bash
+if [ $# -eq 0 ]; then
+   ...
+else
+   ...
+fi
+
+# Dockerfile-Inhalt ändern (nano Dockerfile)
+FROM debian:wheezy # Image bestimmen
+RUN apt-get install terminix # Kommando ausführen
+COPY skript.sh / # skript.sh nach / kopieren
+ENTRYPOINT ["/skript.sh"] # Skript ausführen
+
+# Image erstellen
+docker build -t repositoryname/imagename .
+
+# Container mit neuem Image starten
+docker run repositoryname/imagename 
+```
+
+* Image bei Docker Hub hochladen (Account bei Docker Hub erstellen)
+
+```
+# Dockerfile erstellen und Skript erstellen
+touch Dockerfile
+touch skript.sh
+
+# Skript-Inhalt ändern (nano skript.sh)
+#!/bin/bash
+if [ $# -eq 0 ]; then
+   ...
+else
+   ...
+fi
+
+# Dockerfile-Inhalt ändern (nano Dockerfile)
+FROM debian:wheezy # Image bestimmen
+MAINTAINER Vorname Name <email@domain.com>
+RUN apt-get install terminix # Kommando ausführen
+COPY skript.sh / # skript.sh nach / kopieren
+ENTRYPOINT ["/skript.sh"] # Skript ausführen
+
+# Image erstellen
+docker build -t docker_hub_benutzername/imagename .
+
+# Container mit neuem Image bei Docker Hub hochladen
+docker push docker_hub_benutzername/imagename
+```
+
+
 
 ## Lizenz
 
