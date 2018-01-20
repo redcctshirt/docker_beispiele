@@ -16,6 +16,9 @@ https://hub.docker.com/ - Images
 * [Image mit Dockerfile erstellen](#image-mit-dockerfile-erstellen)
 * [Beispiele 2](#beispiele-2)
   * [Redis Server und Client](#redis-server-und-client)
+* [Container mit Außenwelt verbinden](#container-mit-außenwelt-verbinden)
+* [Container mit Volumes](#container-mit-volumes)
+* [Tools](#tools)
  
 * schlanke und portable Variante für Anwendungen
 * Container können schnell gestartet und beendet werden
@@ -189,6 +192,41 @@ docker rm containername
 
 # Container löschen, wenn er beendet wurde
 docker run --rm hello-world
+
+# Schichten eines Images anzeigen lassen
+docker history imagename
+
+# Container aus Image erzeugen, ohne Start
+docker create
+
+# Datein kopieren zwischen Host und Container
+docker cp
+
+# Befehl in den Container absetzen
+docker exec
+
+# Container abbrechen
+docker kill
+
+# Events vom Daemon ausgeben
+docker events
+
+# verwendete Ports auflisten
+docker port
+
+# Containerdateisystem exportieren, importieren
+docker export/import
+
+# Repository (Image) aus Archiv laden/sichern
+docker load/save
+docker save -o x.tar ubuntu:latest
+docker load -i x.tar
+
+# Tag zuweisen
+docker tag
+
+# Registry-Kommandos
+docker login/logout/pull/push/search
 ```
 
 ## Image erstellen
@@ -219,12 +257,21 @@ touch Dockerfile
 # Dockerfile-Inhalt ändern (nano Dockerfile)
 FROM debian:wheezy # Image bestimmen
 RUN apt-get install terminix # Kommando ausführen
+# mit jedem Kommando wird eine neue Schicht und ein temp. Container erstellt
+# docker history image - Schichten anzeigen lassen
 
 # Image erstellen
 docker build -t repositoryname/imagename .
+# Build auch mit git, http, oder tar.gz möglich
 
 # Container mit neuem Image starten
 docker run repositoryname/imagename 
+
+# .dockerignore - Dateien für build-Context ignorieren
+# minimale Images mit Paketmanager: alpine (5MB), debian, ubuntu, phusion
+# immer aktuelles Image vor dem build herunterladen, docker pull
+# Anweisungen für Dockerfiles: ADD, ARG, CMD, COPY, ENTRYPOINT, ENV, EXPOSE, FROM
+# HEALTHCHECK, MAINTAINER, LABEL, ONBUILD, RUN, SHELL, STOPSIGNAL, USER, VOLUME, WORKDIR
 ```
 
 * Skript nimmt Argumente entgegen
@@ -309,6 +356,50 @@ docker run -v /host/verzeichnis:/container/verzeichnis --name redisserver -d red
 docker run --rm --volumes-from redisserver -v /host/verzeichnis:/container/verzeichnisvolumes ubuntu cp /redisservervolumes/datei /container/verzeichnisvolumes
 ```
 
+## Container mit Außenwelt verbinden
+
+```
+# Ports verbinden (lokal 4000 mit Container 80, -P automatisch freien Port wählen)
+docker run -d -p 4000:80 nginx
+Firefox http://localhost:4000
+
+# belegte Ports auflisten
+docker port
+
+# Docker-Container untereinander verlinken
+docker run -d --name redisserver redis
+docker run --link redisserver:redisd debian env
+```
+
+## Container mit Volumes
+
+```
+# Volumes nutzen, Verzeichnis auf dem Host das im Container gemounted wird
+docker run -it --name containername -h hostname -v /volumes ubuntu /bin/bash
+# oder -v Hostdir:Containerdir
+# --volumes-from containername - Volumes aus anderen Containern verwenden
+
+# Volumes im Container auflisten
+docker inspect -f {{.Mounts}} containername
+
+# Volumes verwalten
+docker volume
+```
+
+## Tools
+
+* Distributionen für Container: Proxmox, CoreOS, RancherOS, Atomic Host
+* Volume-Plugins: Flocker
+* Orchestrieren: Kubernetes, Marathon, Fleet, Swarmkit
+* Container verwalten MacOS, Windows: Kitematic
+* Docker-Hosts im Gruppen zusammenfassen: Swarm
+* Anwendung aus mehereren Docker-Containern bauen: compose
+* installiert Docker-Hosts: Machine
+* Aufsetzen von Container-Netzwerken: Weave, Calico, Overlay
+* Docker-Container soll Services finden: SkyDNS, etcd, Registrator, Consul
+* Dateien vertraulich behandeln: Notary
+* Docker-Images verwalten: Docker Trusted Registry
+ 
 
 ## Lizenz
 
