@@ -21,6 +21,8 @@ https://hub.docker.com/ - Images
 * [Beispiel 3](#beispiel-3)
 * [Beispiel 4](#beispiel-4)
 * [Automation mit docker-compose](#automation-mit-docker-compose)
+* [lokale Registry](#lokale-registry)
+* [docker-machine](#docker-machine)
 * [Tools](#tools)
  
 * schlanke und portable Variante für Anwendungen
@@ -486,7 +488,7 @@ webapp:
  links:
   - containername
 containername:
- image: repo/image:version
+ image: user/image:version
 
 # startet alle Container aus der compose-YAML-Datei
 # -f compose-Datei, -d als Daemon
@@ -507,6 +509,48 @@ docker-compose build
 docker-compose up -d
 ```
 
+## lokale Registry
+
+* eigene Registry für Images starten
+
+```
+# Registry starten
+docker run -d -p 5000:5000 registry:2
+
+# Image auf lokale Registry hochladen
+docker push localhost:5000/image:version
+
+# Image von der lokalen Registry herunterladen
+docker pull localhost:5000/image:version
+```
+
+## docker-machine
+
+* Hosts für Container verwalten
+
+```
+# vorhandene Hosts auflisten
+docker-machine ls
+
+# Host erstellen
+# z.B. bei Remote-Dienst https://www.digitalocean.com/
+docker-machine create
+
+# IP ausgeben
+docker-machine ip host
+
+# Host stoppen
+docker-machine stop host
+
+# Host löschen
+docker-machine rm host
+
+# per ssh mit Host verbinden
+docker-machine ssh host
+
+# Datei in Host kopieren
+docker-machine scp datei host:/datei
+``` 
 
 ## Tools
 
@@ -521,7 +565,9 @@ docker-compose up -d
 * Docker-Container soll Services finden: SkyDNS, etcd, Registrator, Consul
 * Dateien vertraulich behandeln: Notary
 * Docker-Images verwalten: Docker Trusted Registry
- 
+* Container-Hosting-Möglichkeiten: Triton, Google Container Engine, Amazon EC2 Container Service, Giant Swarm
+* quay.io - Alternative für Docker Hub 
+* Key-Value-Stores (verschlüsselt) - KeyWhiz, Vault, Crypt
 
 ## Lizenz
 
