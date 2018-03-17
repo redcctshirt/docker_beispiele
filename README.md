@@ -8,16 +8,19 @@ https://hub.docker.com/ - Images
   * [bei Fedora](#bei-fedora)
   * [docker-Gruppe erstellen](#docker-gruppe-erstellen)
 * [Infos anzeigen](#infos-anzeigen)
-* [Beispiele](#beispiele)
+* [Beispiel](#beispiel)
   * [Hallo Welt](#hallo-welt)
   * [Hallo Welt-Dienst starten](#hallo-welt-dienst-starten)
 * [Kommandos](#kommandos)
 * [Image erstellen](#image-erstellen)
 * [Image mit Dockerfile erstellen](#image-mit-dockerfile-erstellen)
-* [Beispiele 2](#beispiele-2)
+* [Beispiel 2](#beispiel-2)
   * [Redis Server und Client](#redis-server-und-client)
 * [Container mit Außenwelt verbinden](#container-mit-außenwelt-verbinden)
 * [Container mit Volumes](#container-mit-volumes)
+* [Beispiel 3](#beispiel-3)
+* [Beispiel 4](#beispiel-4)
+* [Automation mit docker-compose](#automation-mit-docker-compose)
 * [Tools](#tools)
  
 * schlanke und portable Variante für Anwendungen
@@ -102,7 +105,7 @@ docker images
 docker logs containername
 ```
 
-## Beispiele
+## Beispiel
 
 ### Hallo Welt
 
@@ -331,7 +334,7 @@ docker build -t docker_hub_benutzername/imagename .
 docker push docker_hub_benutzername/imagename
 ```
 
-## Beispiele 2
+## Beispiel 2
 
 ### Redis Server und Client
 
@@ -385,6 +388,125 @@ docker inspect -f {{.Mounts}} containername
 # Volumes verwalten
 docker volume
 ```
+
+## Beispiel 3
+
+* eine Webanwendung im Docker-Container
+
+```
+webapp/service.py
+from flask import Flask
+webapp = Flask(__name__)
+@webapp.route('/')
+def hallo():
+    return 'Hallo\n'
+if __name__ == '__main__':
+    webapp.run(debug=True, host='0.0.0.0')
+
+Dockerfile
+FROM python:3.6
+RUN pip install Flask==0.12.0
+WORKDIR /webapp
+COPY webapp /webapp
+CMD ["python","service.py"]
+
+# Image erstellen
+docker build -t webapp .
+# Container mit Image webapp laufen lassen
+docker run -d -p 5000:5000 webapp
+# Client
+Firefox http://localhost:5000
+curl $(docker inspect --format {{.NetworkSettings.IPAddress}} containername):5000
+# Container anzeigen, -l latest, -q quiet
+docker ps -lq
+# Container mit Image webapp laufen lassen, Volume einsetzen
+docker run -d -p 5000:5000 -v "$PWD"/webapp:/webapp webapp
+```
+
+## Beispiel 4
+
+* eine produktive Webanwendung im Docker-Container
+* mit uWSGI Anwendungsserver für das Produkt (https://uwsgi-docs.readthedocs.io/en/latest/index.html)
+* Dockerfiles ohne Userangabe - Container läuft immer mit Benutzer root
+
+```
+webapp/service.py
+from flask import Flask
+webapp = Flask(__name__)
+@webapp.route('/')
+def hallo():
+    return 'Hallo\n'
+if __name__ == '__main__':
+    webapp.run(debug=True, host='0.0.0.0')
+
+Dockerfile
+FROM python:3.6
+RUN groupadd -r uwsgi && useradd -r -g uwsgi uwsgi
+RUN pip install Flask==0.12.0 uWSGI==2.0.10
+WORKDIR /webapp
+COPY webapp /webapp
+# COPY script.sh /
+EXPOSE 9090 9191
+USER uwsgi
+CMD ["uwsgi","--http", "0.0.0.0:9090","--wsgi-file", "/webapp/service.py", "--callable", "webapp", "--stats", "0.0.0.0:9191"]
+# CMD ["/script.sh"]
+
+# Image erstellen
+docker build -t webapp .
+# Container mit Image webapp laufen lassen, -P zufällige Ports wählen
+# -e Umgebungsvariablen setzen, die eventuell in einem Skript ausgewertet werden
+docker run -d -P webapp
+# Ports anzeigen
+docker port containername
+# Logs anzeigen
+docker logs containername
+# Client
+Firefox http://localhost:9090
+curl $(docker inspect --format {{.NetworkSettings.IPAddress}} containername):9090
+# Container anzeigen, -l latest, -q quiet
+docker ps -lq
+# Container mit Image webapp laufen lassen, Volume einsetzen
+docker run -d -p 9090:9090 -p 9191:9191 -v "$PWD"/webapp:/webapp webapp
+```
+
+## Automation mit docker-compose
+
+* Automation wird per YAML-Konfigurationsdatei erreicht
+
+```
+docker-compose.yml
+webapp:
+ build: .
+ ports:
+  - "9090:9090"
+ environment:
+  ENV: TEST
+ volumes:
+  - ./webapp:/webapp
+ links:
+  - containername
+containername:
+ image: repo/image:version
+
+# startet alle Container aus der compose-YAML-Datei
+# -f compose-Datei, -d als Daemon
+docker-compose up
+
+# Infos
+docker-compose ps
+# Logs anzeigen
+docker-compose logs
+# alle Container stoppen
+docker-compose stop
+# alle Container entfernen, die nicht laufen
+docker-compose rm
+
+# nach Änderungen, alle Images neu erstellen
+# --force-recreate alle Container stoppen und neu erstellen
+docker-compose build
+docker-compose up -d
+```
+
 
 ## Tools
 
