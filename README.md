@@ -23,6 +23,8 @@ https://hub.docker.com/ - Images
 * [Automation mit docker-compose](#automation-mit-docker-compose)
 * [lokale Registry](#lokale-registry)
 * [docker-machine](#docker-machine)
+* [Logging der Container](#logging-der-container)
+* [Vernetzung](#vernetzung)
 * [Tools](#tools)
  
 * schlanke und portable Variante für Anwendungen
@@ -550,7 +552,103 @@ docker-machine ssh host
 
 # Datei in Host kopieren
 docker-machine scp datei host:/datei
+
+# Weitere Kommandos
+start, inspect, status, active, restart, url, env, config
 ``` 
+
+## Logging der Container
+
+* STDOUT und STDERR wird per Log angezeigt
+
+```
+# Logging anzeigen, -t mit Zeitstempel, -f streamen 
+docker logs container
+
+# per Remote API
+curl -i --cacert ~/.docker/machine/certs/ca.pem --cert ~/.docker/machine/certs/ca.pem --key ~/.docker/machine/certs/key.pem "https://$(docker-machine ip default):2376/containers/$(docker ps -lq)/logs?stderr=1&stdout=1"
+
+# Logging-Methode ändern
+docker run -d image --log-driver json-file|syslog|none|fluentd|awslogs usw.
+
+# Logs handhaben mit den Programmen Elasticsearch, logstash, kibana, logspout
+
+# Logging mit syslog
+docker run -d --log-driver=syslog image
+tail -f /var/log/syslog
+
+# Logging-Datei für einen Container
+/var/lib/docker/containers/id/id-json.log
+
+# Docker-Events anzeigen
+docker events
+
+# Status-Anzeigen eines Containers (Ressourcenverbrauch)
+docker stats container
+# alle Container
+docker stats $(docker ps -qa)
+
+# cAdvisor - Monitoring-Tool für Docker
+docker run -d --name mon -v /:/rootfs:ro -v /var/run:/var/run:rw -v /sys:/sys:ro -v /var/lib/docker:/var/lib/docker:ro -v /cgroups:/cgroups -p 8080:8080 google/cadvisor
+
+# Cluster-Monitoring-Tools: Heapster, Prometheus
+# Nachrichten-Dienste: PagerDuty, Pushover
+# Metriken können z.B. per Python-Skript mit Prometheus-Client-Bibliothek hinzugefügt werden
+```
+
+## Vernetzung
+
+* 2 Container innerhalb eines Hosts können miteinander verlinkt werden
+* die Dienste können dann über Host:Port angesprochen werden
+
+```
+# Redis Server starten (-d Daemon), --name Containername
+docker run --name redisserver -d redis
+
+# Redis Client starten, mit Container redisserver verbinden und als redisd ansprechen
+docker run --rm -it --link redisserver:redisd redis /bin/bash
+redis-cli -h redisd -p 6379 # Redis-Client probieren
+```
+
+* 2 Container auf unterschiedl. Hosts miteinander verbinden
+* Host1 (App-Container, Ambassador) <-> Service
+* Host1 (App-Container, Ambassador) <-> Host2 (Ambassador, Service-Container) 
+* Ambassador sind Proxy-Container (Relays)
+
+```
+# 2 Hosts erstellen (Virtualbox muss installiert sein)
+docker-machine create -d virtualbox redis-server-host
+docker-machine create -d virtualbox redis-client-host
+
+# Umgebung für Docker-Client setzen, Host: redis-server-host setzen
+eval $(docker-machine env redis-server-host)
+# Service-Container in Host starten
+docker run --name redisserver -d redis
+# Ambassador-Container in Host starten
+docker run -d --name redisserver-ambassador -p 6379:6379 --link redisserver:redisserver amouat/ambassador
+
+# Umgebung für Docker-Client setzen, Host: redis-client-host setzen
+eval $(docker-machine env redis-client-host)
+# Ambassador-Container in Host starten
+docker run -d --name redisclient-ambassador --expose 6379 -e REDIS_PORT_6379_TCP=tcp://$(docker-machine ip redis-server-host):6379 amouat/ambassador
+# Client starten
+docker run --rm -it --link redisclient-ambassador:redisclient-ambassador redis /bin/bash
+redis-cli -h redisclient-ambassador -p 6379 # Redis-Client probieren
+```
+
+* Service-Discovery-Tools: etcd, Consul, SkyDNS, ZooKeeper, SmartStack, Eureka, WeaveDNS, docker-discover
+* in Docker gibt es folgende Networking-Modi: Bridge, Host, Container, None
+* mit --icc=false beim Daemon kann die Networking-Verbindung zwischen den Containern deaktiviert werden
+* mit --icc=false, --iptables=true - nur verknüpfte Container haben eine Networking-Verbindung
+
+* Docker-Networking (mit network und service ist link nicht mehr notwendig)
+
+```
+# Netzwerke auflisten
+docker network ls
+
+
+```
 
 ## Tools
 
