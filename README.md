@@ -25,6 +25,8 @@ https://hub.docker.com/ - Images
 * [docker-machine](#docker-machine)
 * [Logging der Container](#logging-der-container)
 * [Vernetzung](#vernetzung)
+* [Orchestrieren](#orchestrieren)
+* [Verwaltung](#verwaltung)
 * [Tools](#tools)
  
 * schlanke und portable Variante für Anwendungen
@@ -642,13 +644,52 @@ redis-cli -h redisclient-ambassador -p 6379 # Redis-Client probieren
 * mit --icc=false, --iptables=true - nur verknüpfte Container haben eine Networking-Verbindung
 
 * Docker-Networking (mit network und service ist link nicht mehr notwendig)
+* Netzwerktreiber befinden sich in /usr/share/docker/plugins
 
 ```
 # Netzwerke auflisten
 docker network ls
 
+# Dienste auflisten
+docker service ls
+
+# Netzwerk mit overlay erstellen
+docker network create -d overlay net
+
+# Netzwerkinfos
+docker network info net
+
+# Netzwerk erstellen
+docker network create --subnet=172.20.0.0/16 mynet
+
+# Container im neuen Netzwerk laufen lassen
+docker run --net mynet --ip 172.20.0.10 -it nginx bash
+```
+
+* weave (https://www.weave.works/) ist eine einfache Netzwerklösung
+* flannel ist eine Cross-Host-Netzwerklösung
+* calico ist eine einfache Netzwerklösung
+
+## Orchestrieren
+
+* swarm - Clustering-Tool von docker
+* fleet - Clustering-Tool von CoreOS
+* Kubernetes - Orchestrierungstool von Google
+* Mesos - Cluster Manager von Apache
+
+## Verwaltung
+
+* Rancher - Verwaltungs-Plattform
+* Rancher Compose - Cli-Tool für docker-compose
 
 ```
+# Rancher-Server starten
+docker run -d -p 8080:8080 rancher/server
+```
+
+* Clocker - Container-Management-Tool
+* Tutum - Container-Verwaltungs-Plattform
+
 
 ## Tools
 
