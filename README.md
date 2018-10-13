@@ -199,6 +199,12 @@ docker diff containername
 # Container löschen
 docker rm containername
 
+# alle Container löschen
+docker rm $(docker ps -aq)
+
+# Image löschen
+docker rmi image
+
 # Container löschen, wenn er beendet wurde
 docker run --rm hello-world
 
@@ -236,6 +242,12 @@ docker tag
 
 # Registry-Kommandos
 docker login/logout/pull/push/search
+
+# Image-Update
+docker pull image
+docker stop container
+docker rm container
+docker run ... image
 ```
 
 ## Image erstellen
@@ -393,6 +405,9 @@ docker inspect -f {{.Mounts}} containername
 
 # Volumes verwalten
 docker volume
+
+# nicht mehr genutzte Volumes löschen (gespeichert unter /var/lib/docker/volumes)
+docker volume prune
 ```
 
 ## Beispiel 3
@@ -652,6 +667,9 @@ docker network ls
 
 # Dienste auflisten
 docker service ls
+
+# Netzwerk erstellen
+docker network create mynet
 
 # Netzwerk mit overlay erstellen
 docker network create -d overlay net
