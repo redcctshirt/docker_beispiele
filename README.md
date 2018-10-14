@@ -490,6 +490,83 @@ docker ps -lq
 docker run -d -p 9090:9090 -p 9191:9191 -v "$PWD"/webapp:/webapp webapp
 ```
 
+## Beispiel 5
+
+```
+# Wordpress
+docker network create mynet
+docker run -d --name wpcontainer --network mynet -v /home/wordpress/wordpress-html:/var/www/html -p 80:80 -e WORDPRESS_DB_PASSWORD=password -e WORDPRESS_DB_HOST=mariadb-container wordpress
+```
+
+## Beispiel 6
+
+```
+# MariaDB + phpmyadmin
+docker network create mynet
+docker run -d --name mariadb-container -p 3306:3306 -e MYSQL_ROOT_PASSWORD=password --network mynet -v /home/username/mariadb:/var/lib/mysql mariadb
+docker run -d --name pma-container -p 8080:80 --network mynet -e PMA_HOST=mariadb-container phpmyadmin/phpmyadmin
+```
+
+## Beispiel 7
+
+```
+# Node.js
+# Dockerfile
+FROM node:10
+ENV TZ="Europa/Berlin"
+COPY bsp.js /src/
+USER node
+CMD ["node", "/src/bsp.js"]
+
+# bsp/bsp.js
+const http = require("http"), os = require("os");
+http.createServer((req,res) => {
+ const data = new Date(),
+ htmldata = `<!DOCTYPE html>
+<html>
+ <head>
+  <title>Titel</title>
+  <meta charset="utf-8" />
+ </head>
+ <body>
+  <h1>Seite</h1>
+  ${data}
+ </body>
+</html>`
+res.setHeader('Content-Type', 'text/html');
+res.end(htmldata);
+}).listen(8080);
+
+docker build -t bsp .
+docker run -p 8080:8080 bsp
+```
+
+## Beispiel 8
+
+```
+# PHP
+# Dockerfile
+FROM php:7-apache
+ENV TZ="Europa/Berlin"
+COPY index.php /var/www/html
+
+# bsp/index.html
+<!DOCTYPE html>
+<html>
+ <head>
+  <title>Titel</title>
+  <meta charset="utf-8" />
+ </head>
+ <body>
+  <h1>Seite</h1>
+  <?php echo date("c"); ?>
+ </body>
+</html>
+
+docker build -t bsp .
+docker run -p 80:80 bsp
+```
+
 ## Automation mit docker-compose
 
 * Automation wird per YAML-Konfigurationsdatei erreicht
