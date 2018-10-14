@@ -588,7 +588,7 @@ containername:
 
 # startet alle Container aus der compose-YAML-Datei
 # -f compose-Datei, -d als Daemon
-docker-compose up
+docker-compose up -d
 
 # Infos
 docker-compose ps
@@ -596,13 +596,43 @@ docker-compose ps
 docker-compose logs
 # alle Container stoppen
 docker-compose stop
+# Container starten
+docker-compose start
+# Neustart
+docker-compose restart
+# Container pausieren
+docker-compose pause
+# Container killen
+docker-compose kill
+# Events
+docker-compose events
+# Prozesse
+docker-compose top
 # alle Container entfernen, die nicht laufen
 docker-compose rm
+# alle Container stoppen und entfernen
+docker-compose down
 
 # nach Änderungen, alle Images neu erstellen
 # --force-recreate alle Container stoppen und neu erstellen
 docker-compose build
 docker-compose up -d
+
+# für die interaktive Nutzung
+docker-compose run --rm service
+
+# Als Alternative kann docker stack deploy verwendet werden, Voraussetzung: docker swarm init
+docker swarm init
+docker stack deploy -c docker-compose.yml stackname
+
+# Stack-Liste
+docker stack ls
+
+# Service-Liste
+docker service ls
+
+# Stack löschen
+docker stack rm stackname
 ```
 
 ## lokale Registry
